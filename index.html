@@ -3,31 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finde den Fehler im Bild</title>
+    <title>Optische Täuschung: Detail-Analyse</title>
     <style>
         body {
             margin: 0;
             padding: 0;
-            background-color: #f0f0f0;
-            font-family: Arial, sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            font-family: 'Courier New', Courier, monospace;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
             overflow: hidden;
+            user-select: none;
         }
+
         .container {
             text-align: center;
+            max-width: 800px;
+            padding: 20px;
         }
-        /* Das normale, harmlose Bild */
-        #normal-img {
-            max-width: 80%;
-            max-height: 70vh;
-            border: 5px solid white;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+
+        h1 {
+            font-size: 1.8rem;
+            color: #00ffcc;
+            text-shadow: 0 0 10px rgba(0,255,204,0.3);
+        }
+
+        .instruction {
+            font-size: 1rem;
+            color: #aaaaaa;
+            margin-bottom: 20px;
+        }
+
+        /* Das harmlose Suchbild */
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+            border: 4px solid #333;
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
             cursor: pointer;
         }
-        /* Das versteckte Jumpscare-Element */
+
+        #normal-img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+            max-height: 60vh;
+            transition: filter 0.3s;
+        }
+
+        #normal-img:hover {
+            filter: brightness(1.1);
+        }
+
+        /* JUMPSCARE OVERLAY */
         #jumpscare {
             display: none;
             position: fixed;
@@ -35,49 +66,101 @@
             left: 0;
             width: 100vw;
             height: 100vh;
-            background-color: black;
-            z-index: 9999;
+            background-color: #000;
+            z-index: 99999;
+            overflow: hidden;
         }
-        #jumpscare img {
+
+        /* Das Gruselbild mit Zoom-Animation */
+        #scary-img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transform: scale(1);
+        }
+
+        .zoom-animation {
+            animation: scare-zoom 0.15s infinite alternate, shake 0.05s infinite;
+        }
+
+        /* Stroboskop-Hintergrundblitz */
+        .strobe-effect {
+            animation: strobe 0.08s infinite;
+        }
+
+        /* ANIMATIONEN */
+        @keyframes strobe {
+            0% { background-color: #000000; }
+            49% { background-color: #000000; }
+            50% { background-color: #ff0000; }
+            99% { background-color: #ff0000; }
+            100% { background-color: #ffffff; }
+        }
+
+        @keyframes scare-zoom {
+            0% { transform: scale(1.1); }
+            100% { transform: scale(1.4); }
+        }
+
+        @keyframes shake {
+            0% { translate: 2px 2px; }
+            50% { translate: -2px -2px; }
+            100% { translate: 1px -1px; }
         }
     </style>
 </head>
 <body>
 
     <div class="container" id="content">
-        <h1>Finde die 3 Unterschiede im Bild!</h1>
-        <p>Schaue ganz genau hin und drehe deine Lautsprecher auf, falls du die Audio-Hinweise brauchst...</p>
-        <!-- Ersetze diese URL mit einem harmlosen Bild (z.B. eine Landschaft) -->
-        <img id="normal-img" src="https://picsum.photos" alt="Suchbild" onclick="startTimer()">
+        <h1>Finde den versteckten Fehler im Bild</h1>
+        <p class="instruction">In dieser Aufnahme hat sich ein digitaler Artefakt-Fehler eingeschlichen. Klicke auf das Bild, um die Lupe zu aktivieren, und gehe nah an den Bildschirm heran, um die verpixelte Stelle zu suchen.</p>
+        
+        <div class="image-wrapper" onclick="triggerScareCountdown()">
+            <!-- Harmloses Landschaftsbild als Köder -->
+            <img id="normal-img" src="https://picsum.photos" alt="Analyse-Bild">
+        </div>
     </div>
 
-    <!-- Das Jumpscare-Overlay -->
+    <!-- Schock-Elemente -->
     <div id="jumpscare">
-        <!-- Ersetze diese URL mit deinem Gruselbild -->
-        <img id="scary-img" src="https://placekitten.com" alt="BOO!">
-        <!-- Ersetze diese URL mit deinem Jumpscare-Sound -->
-        <audio id="scary-sound" src="https://soundjay.com" preload="auto"></audio>
+        <!-- Gruselbild-Platzhalter (Ersetze die URL für maximale Wirkung) -->
+        <img id="scary-img" src="https://unsplash.com" alt="BOO!">
+        <!-- Lauter Schrei-Sound -->
+        <audio id="scary-sound" src="https://soundjay.com" preload="auto" loop></audio>
     </div>
 
     <script>
-        // Startet den Countdown, sobald der Nutzer auf das Bild klickt
-        // (Moderne Browser blockieren Sound, bis eine Interaktion stattfindet)
-        function startTimer() {
-            alert("Suche gestartet! Schau ganz genau hin...");
+        function triggerScareCountdown() {
+            // Text ändert sich, um die Person zu fesseln
+            document.querySelector('.instruction').innerHTML = "<strong>Lupe aktiv.</strong> Scanne das Bild... Bitte verharre 5 Sekunden ganz ruhig vor dem Monitor...";
             
+            // Der Schock wird nach genau 4.5 Sekunden ausgelöst
             setTimeout(function() {
-                var jumpscareDiv = document.getElementById('jumpscare');
+                var scareDiv = document.getElementById('jumpscare');
+                var scaryImg = document.getElementById('scary-img');
                 var sound = document.getElementById('scary-sound');
                 
-                // Jumpscare anzeigen
-                jumpscareDiv.style.display = 'block';
+                // 1. Vollbildmodus erzwingen (funktioniert durch den Klick des Nutzers)
+                var docElm = document.documentElement;
+                if (docElm.requestFullscreen) { docElm.requestFullscreen(); }
+                else if (docElm.mozRequestFullScreen) { docElm.mozRequestFullScreen(); }
+                else if (docElm.webkitRequestFullScreen) { docElm.webkitRequestFullScreen(); }
+                else if (docElm.msRequestFullscreen) { docElm.msRequestFullscreen(); }
+
+                // 2. Effekte aktivieren
+                scareDiv.style.display = 'block';
+                scareDiv.classList.add('strobe-effect');
+                scaryImg.classList.add('zoom-animation');
                 
-                // Sound abspielen
+                // 3. Sound in maximaler Lautstärke abspielen (wiederholt sich durch 'loop')
+                sound.volume = 1.0;
                 sound.play().catch(function(error) {
-                    console.log("Audio-Autoplay wurde vom Browser blockiert:", error);
+                    console.log("Audio blockiert:", error);
                 });
-            }, 5000); // 5000 Millisekunden = 5 Sekunden Wartezeit
+
+            }, 4500);
         }
+    </script>
+
+</body>
+</html>
